@@ -91,86 +91,85 @@ module.exports.GET_DEFAULT_PROFILES = `
 `;
 
 module.exports.GET_PROFILE_FROM_ID = `
-query($request: SingleProfileQueryRequest!) {
+query Profile($request: SingleProfileQueryRequest!, $who: ProfileId) {
   profile(request: $request) {
-      id
-      name
-      bio
-      attributes {
-        displayType
-        traitType
-        key
-        value
-      }
-      followNftAddress
-      metadata
-      isDefault
-      picture {
-        ... on NftImage {
-          contractAddress
-          tokenId
-          uri
-          verified
-        }
-        ... on MediaSet {
-          original {
-            url
-            mimeType
+    id
+    handle
+    ownedBy
+    name
+    bio
+    metadata
+    followNftAddress
+    isFollowedByMe
+    isFollowing(who: $who)
+    attributes {
+      key
+      value
+      __typename
+    }
+    dispatcher {
+      canUseRelay
+      __typename
+    }
+    onChainIdentity {
+      proofOfHumanity
+      sybilDotOrg {
+        verified
+        source {
+          twitter {
+            handle
+            __typename
           }
+          __typename
         }
         __typename
       }
-      handle
-      coverPicture {
-        ... on NftImage {
-          contractAddress
-          tokenId
-          uri
-          verified
-        }
-        ... on MediaSet {
-          original {
-            url
-            mimeType
-          }
+      ens {
+        name
+        __typename
+      }
+      worldcoin {
+        isHuman
+        __typename
+      }
+      __typename
+    }
+    stats {
+      totalFollowers
+      totalFollowing
+      totalPosts
+      totalComments
+      totalMirrors
+      __typename
+    }
+    picture {
+      ... on MediaSet {
+        original {
+          url
+          __typename
         }
         __typename
       }
-      ownedBy
-      dispatcher {
-        address
-        canUseRelay
+      ... on NftImage {
+        uri
+        __typename
       }
-      stats {
-        totalFollowers
-        totalFollowing
-        totalPosts
-        totalComments
-        totalMirrors
-        totalPublications
-        totalCollects
+      __typename
+    }
+    coverPicture {
+      ... on MediaSet {
+        original {
+          url
+          __typename
+        }
+        __typename
       }
-      followModule {
-        ... on FeeFollowModuleSettings {
-          type
-          amount {
-            asset {
-              symbol
-              name
-              decimals
-              address
-            }
-            value
-          }
-          recipient
-        }
-        ... on ProfileFollowModuleSettings {
-          type
-        }
-        ... on RevertFollowModuleSettings {
-          type
-        }
-      }
+      __typename
+    }
+    followModule {
+      __typename
+    }
+    __typename
   }
 }
 `;
@@ -1747,8 +1746,8 @@ mainPost {
 `;
 
 module.exports.CREATE_FOLLOW_TYPED_DATA = `
-mutation($request: FollowRequest!) { 
-  createFollowTypedData(request: $request) {
+mutation CreateFollowTypedData($options: TypedDataOptions, $request: FollowRequest!) {
+  createFollowTypedData(options: $options, request: $request) {
     id
     expiresAt
     typedData {
@@ -1778,7 +1777,7 @@ mutation($request: FollowRequest!) {
 module.exports.GET_FOLLOWING = `
 query($request: FollowingRequest!) {
   following(request: $request) { 
-              items {
+    items {
          profile {
             id
             name
@@ -3317,3 +3316,148 @@ fragment Wallet on Wallet {
   totalAmountOfProfiles
 }
 `;
+
+module.exports.GET_PROFILES = `
+query ($request: ProfileQueryRequest!) {
+  profiles(request: $request) {
+    items {
+      id
+      name
+      bio
+      metadata
+      attributes {
+        displayType
+        traitType
+        key
+        value
+        __typename
+      }
+      picture {
+        ... on NftImage {
+          contractAddress
+          tokenId
+          uri
+          verified
+          __typename
+        }
+        ... on MediaSet {
+          original {
+            url
+            mimeType
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      handle
+      coverPicture {
+        ... on NftImage {
+          contractAddress
+          tokenId
+          uri
+          verified
+          __typename
+        }
+        ... on MediaSet {
+          original {
+            url
+            mimeType
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      ownedBy
+      dispatcher {
+        address
+        canUseRelay
+        __typename
+      }
+      stats {
+        totalFollowers
+        totalFollowing
+        totalPosts
+        totalComments
+        totalMirrors
+        totalPublications
+        totalCollects
+        __typename
+      }
+      followModule {
+        ... on FeeFollowModuleSettings {
+          type
+          amount {
+            asset {
+              symbol
+              name
+              decimals
+              address
+              __typename
+            }
+            value
+            __typename
+          }
+          recipient
+          __typename
+        }
+        ... on ProfileFollowModuleSettings {
+          type
+          __typename
+        }
+        ... on RevertFollowModuleSettings {
+          type
+          __typename
+        }
+        __typename
+      }
+      dispatcher {
+        canUseRelay
+        __typename
+      }
+      __typename
+    }
+    pageInfo {
+      prev
+      next
+      totalCount
+      __typename
+    }
+    __typename
+  }
+}`
+
+module.exports.PROXY_ACTION = `
+mutation ProxyAction($request: ProxyActionRequest!) {
+  proxyAction(request: $request)
+}
+`
+
+module.exports.PROXY_ACTION_STATUS = `
+query ProxyActionStatus($proxyActionId: ProxyActionId!) {
+  proxyActionStatus(proxyActionId: $proxyActionId) {
+    ... on ProxyActionStatusResult {
+      txHash
+      txId
+      status
+    }
+    ... on ProxyActionError {
+      reason
+      lastKnownTxId
+    }
+    ... on ProxyActionQueued {
+      queuedAt
+    }
+  }
+}
+`
+
+module.exports.USER_SIG_NONCES = `
+query UserSigNonces {
+  userSigNonces {
+    lensHubOnChainSigNonce
+    peripheryOnChainSigNonce
+  }
+}
+`
