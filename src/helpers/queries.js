@@ -2353,22 +2353,25 @@ module.exports.REMOVE_REACTION = `
 `;
 
 module.exports.CREATE_POST_TYPED_DATA = `
-  mutation($request: CreatePublicPostRequest!) { 
-    createPostTypedData(request: $request) {
-      id
-      expiresAt
-      typedData {
-        types {
-          PostWithSig {
-            name
-            type
-          }
+mutation CreatePostTypedData($options: TypedDataOptions, $request: CreatePublicPostRequest!) {
+  createPostTypedData(options: $options, request: $request) {
+    id
+    expiresAt
+    typedData {
+      types {
+        PostWithSig {
+          name
+          type
+          __typename
         }
+        __typename
+      }
       domain {
         name
         chainId
         version
         verifyingContract
+        __typename
       }
       value {
         nonce
@@ -2379,10 +2382,13 @@ module.exports.CREATE_POST_TYPED_DATA = `
         collectModuleInitData
         referenceModule
         referenceModuleInitData
+        __typename
       }
-     }
-   }
- }
+      __typename
+    }
+    __typename
+  }
+}
 `;
 
 module.exports.CREATE_COMMENT_TYPED_DATA = `
@@ -3085,6 +3091,412 @@ module.exports.GET_PUBLICATION = `
   }
 `;
 
+module.exports.GET_PUBLICATION_WITH_PROFILEID = `
+query Publication($request: PublicationQueryRequest!, $reactionRequest: ReactionFieldResolverRequest, $profileId: ProfileId) {
+  publication(request: $request) {
+    ... on Post {
+      ...PostFields
+      onChainContentURI
+      collectNftAddress
+      profile {
+        isFollowedByMe
+        __typename
+      }
+      referenceModule {
+        __typename
+      }
+      __typename
+    }
+    ... on Comment {
+      ...CommentFields
+      onChainContentURI
+      collectNftAddress
+      profile {
+        isFollowedByMe
+        __typename
+      }
+      referenceModule {
+        __typename
+      }
+      __typename
+    }
+    ... on Mirror {
+      ...MirrorFields
+      onChainContentURI
+      collectNftAddress
+      profile {
+        isFollowedByMe
+        __typename
+      }
+      referenceModule {
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment PostFields on Post {
+  id
+  profile {
+    ...ProfileFields
+    __typename
+  }
+  reaction(request: $reactionRequest)
+  mirrors(by: $profileId)
+  canComment(profileId: $profileId) {
+    result
+    __typename
+  }
+  canMirror(profileId: $profileId) {
+    result
+    __typename
+  }
+  hasCollectedByMe
+  collectedBy {
+    address
+    defaultProfile {
+      ...ProfileFields
+      __typename
+    }
+    __typename
+  }
+  collectModule {
+    ...CollectModuleFields
+    __typename
+  }
+  stats {
+    ...StatsFields
+    __typename
+  }
+  metadata {
+    ...MetadataFields
+    __typename
+  }
+  hidden
+  createdAt
+  appId
+  __typename
+}
+
+fragment ProfileFields on Profile {
+  id
+  name
+  handle
+  bio
+  ownedBy
+  attributes {
+    key
+    value
+    __typename
+  }
+  picture {
+    ... on MediaSet {
+      original {
+        url
+        __typename
+      }
+      __typename
+    }
+    ... on NftImage {
+      uri
+      __typename
+    }
+    __typename
+  }
+  followModule {
+    __typename
+  }
+  __typename
+}
+
+fragment CollectModuleFields on CollectModule {
+  ... on FreeCollectModuleSettings {
+    type
+    contractAddress
+    followerOnly
+    __typename
+  }
+  ... on FeeCollectModuleSettings {
+    type
+    recipient
+    referralFee
+    contractAddress
+    followerOnly
+    amount {
+      asset {
+        symbol
+        decimals
+        address
+        __typename
+      }
+      value
+      __typename
+    }
+    __typename
+  }
+  ... on LimitedFeeCollectModuleSettings {
+    type
+    collectLimit
+    recipient
+    referralFee
+    contractAddress
+    followerOnly
+    amount {
+      asset {
+        symbol
+        decimals
+        address
+        __typename
+      }
+      value
+      __typename
+    }
+    __typename
+  }
+  ... on LimitedTimedFeeCollectModuleSettings {
+    type
+    collectLimit
+    recipient
+    endTimestamp
+    referralFee
+    contractAddress
+    followerOnly
+    amount {
+      asset {
+        symbol
+        decimals
+        address
+        __typename
+      }
+      value
+      __typename
+    }
+    __typename
+  }
+  ... on TimedFeeCollectModuleSettings {
+    type
+    recipient
+    endTimestamp
+    referralFee
+    contractAddress
+    followerOnly
+    amount {
+      asset {
+        symbol
+        decimals
+        address
+        __typename
+      }
+      value
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment StatsFields on PublicationStats {
+  totalUpvotes
+  totalAmountOfMirrors
+  totalAmountOfCollects
+  totalAmountOfComments
+  __typename
+}
+
+fragment MetadataFields on MetadataOutput {
+  name
+  description
+  content
+  cover {
+    original {
+      url
+      __typename
+    }
+    __typename
+  }
+  media {
+    original {
+      url
+      mimeType
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment CommentFields on Comment {
+  id
+  profile {
+    ...ProfileFields
+    __typename
+  }
+  reaction(request: $reactionRequest)
+  mirrors(by: $profileId)
+  canComment(profileId: $profileId) {
+    result
+    __typename
+  }
+  canMirror(profileId: $profileId) {
+    result
+    __typename
+  }
+  hasCollectedByMe
+  collectedBy {
+    address
+    defaultProfile {
+      ...ProfileFields
+      __typename
+    }
+    __typename
+  }
+  collectModule {
+    ...CollectModuleFields
+    __typename
+  }
+  stats {
+    ...StatsFields
+    __typename
+  }
+  metadata {
+    ...MetadataFields
+    __typename
+  }
+  hidden
+  createdAt
+  appId
+  commentOn {
+    ... on Post {
+      ...PostFields
+      __typename
+    }
+    ... on Comment {
+      id
+      profile {
+        ...ProfileFields
+        __typename
+      }
+      reaction(request: $reactionRequest)
+      mirrors(by: $profileId)
+      canComment(profileId: $profileId) {
+        result
+        __typename
+      }
+      canMirror(profileId: $profileId) {
+        result
+        __typename
+      }
+      hasCollectedByMe
+      collectedBy {
+        address
+        defaultProfile {
+          handle
+          __typename
+        }
+        __typename
+      }
+      collectModule {
+        ...CollectModuleFields
+        __typename
+      }
+      metadata {
+        ...MetadataFields
+        __typename
+      }
+      stats {
+        ...StatsFields
+        __typename
+      }
+      mainPost {
+        ... on Post {
+          ...PostFields
+          __typename
+        }
+        ... on Mirror {
+          ...MirrorFields
+          __typename
+        }
+        __typename
+      }
+      hidden
+      createdAt
+      __typename
+    }
+    ... on Mirror {
+      ...MirrorFields
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment MirrorFields on Mirror {
+  id
+  profile {
+    ...ProfileFields
+    __typename
+  }
+  reaction(request: $reactionRequest)
+  canComment(profileId: $profileId) {
+    result
+    __typename
+  }
+  canMirror(profileId: $profileId) {
+    result
+    __typename
+  }
+  collectModule {
+    ...CollectModuleFields
+    __typename
+  }
+  stats {
+    ...StatsFields
+    __typename
+  }
+  metadata {
+    ...MetadataFields
+    __typename
+  }
+  hidden
+  mirrorOf {
+    ... on Post {
+      ...PostFields
+      __typename
+    }
+    ... on Comment {
+      id
+      profile {
+        ...ProfileFields
+        __typename
+      }
+      reaction(request: $reactionRequest)
+      mirrors(by: $profileId)
+      canComment(profileId: $profileId) {
+        result
+        __typename
+      }
+      canMirror(profileId: $profileId) {
+        result
+        __typename
+      }
+      stats {
+        ...StatsFields
+        __typename
+      }
+      createdAt
+      __typename
+    }
+    __typename
+  }
+  createdAt
+  appId
+  __typename
+}
+`
+
 module.exports.HIDE_PUBLICATION = `
   mutation($request: HidePublicationRequest!) { 
    hidePublication(request: $request)
@@ -3459,5 +3871,586 @@ query UserSigNonces {
     lensHubOnChainSigNonce
     peripheryOnChainSigNonce
   }
+}
+`
+
+module.exports.BROADCAST = `
+mutation Broadcast($request: BroadcastRequest!) {
+  broadcast(request: $request) {
+    ... on RelayerResult {
+      txHash
+      __typename
+    }
+    ... on RelayError {
+      reason
+      __typename
+    }
+    __typename
+  }
+}
+`
+
+module.exports.ENABLED_MODULES = `
+query EnabledModules {
+  enabledModules {
+    collectModules {
+      moduleName
+      contractAddress
+      __typename
+    }
+    __typename
+  }
+  enabledModuleCurrencies {
+    name
+    symbol
+    decimals
+    address
+    __typename
+  }
+}
+`
+
+module.exports.CREATE_SET_DISPATCHER_TYPED_DATA = `
+mutation CreateSetDispatcherTypedData($options: TypedDataOptions, $request: SetDispatcherRequest!) {
+  createSetDispatcherTypedData(options: $options, request: $request) {
+    id
+    expiresAt
+    typedData {
+      types {
+        SetDispatcherWithSig {
+          name
+          type
+          __typename
+        }
+        __typename
+      }
+      domain {
+        name
+        chainId
+        version
+        verifyingContract
+        __typename
+      }
+      value {
+        nonce
+        deadline
+        profileId
+        dispatcher
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+`
+
+module.exports.CREATE_POST_VIA_DISPATCHER = `
+mutation CreatePostViaDispatcher($request: CreatePublicPostRequest!) {
+  createPostViaDispatcher(request: $request) {
+    ...RelayerResultFields
+    __typename
+  }
+}
+
+fragment RelayerResultFields on RelayResult {
+  ... on RelayerResult {
+    txHash
+    txId
+    __typename
+  }
+  ... on RelayError {
+    reason
+    __typename
+  }
+  __typename
+}
+`
+
+module.exports.PROFILE_FEED = `
+query ProfileFeed($request: PublicationsQueryRequest!, $reactionRequest: ReactionFieldResolverRequest, $profileId: ProfileId) {
+  publications(request: $request) {
+    items {
+      ... on Post {
+        ...PostFields
+        __typename
+      }
+      ... on Comment {
+        ...CommentFields
+        __typename
+      }
+      ... on Mirror {
+        ...MirrorFields
+        __typename
+      }
+      __typename
+    }
+    pageInfo {
+      totalCount
+      next
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment PostFields on Post {
+  id
+  profile {
+    ...ProfileFields
+    __typename
+  }
+  reaction(request: $reactionRequest)
+  mirrors(by: $profileId)
+  hasCollectedByMe
+  onChainContentURI
+  isGated
+  canComment(profileId: $profileId) {
+    result
+    __typename
+  }
+  canMirror(profileId: $profileId) {
+    result
+    __typename
+  }
+  canDecrypt(profileId: $profileId) {
+    result
+    reasons
+    __typename
+  }
+  collectedBy {
+    address
+    defaultProfile {
+      ...ProfileFields
+      __typename
+    }
+    __typename
+  }
+  collectModule {
+    ...CollectModuleFields
+    __typename
+  }
+  stats {
+    ...StatsFields
+    __typename
+  }
+  metadata {
+    ...MetadataFields
+    __typename
+  }
+  hidden
+  createdAt
+  appId
+  __typename
+}
+
+fragment ProfileFields on Profile {
+  id
+  name
+  handle
+  bio
+  ownedBy
+  isFollowedByMe
+  stats {
+    totalFollowers
+    totalFollowing
+    __typename
+  }
+  attributes {
+    key
+    value
+    __typename
+  }
+  picture {
+    ... on MediaSet {
+      original {
+        url
+        __typename
+      }
+      __typename
+    }
+    ... on NftImage {
+      uri
+      __typename
+    }
+    __typename
+  }
+  followModule {
+    __typename
+  }
+  __typename
+}
+
+fragment CollectModuleFields on CollectModule {
+  ... on FreeCollectModuleSettings {
+    type
+    contractAddress
+    followerOnly
+    __typename
+  }
+  ... on FeeCollectModuleSettings {
+    type
+    referralFee
+    contractAddress
+    followerOnly
+    amount {
+      asset {
+        symbol
+        decimals
+        address
+        __typename
+      }
+      value
+      __typename
+    }
+    __typename
+  }
+  ... on LimitedFeeCollectModuleSettings {
+    type
+    collectLimit
+    referralFee
+    contractAddress
+    followerOnly
+    amount {
+      asset {
+        symbol
+        decimals
+        address
+        __typename
+      }
+      value
+      __typename
+    }
+    __typename
+  }
+  ... on LimitedTimedFeeCollectModuleSettings {
+    type
+    collectLimit
+    endTimestamp
+    referralFee
+    contractAddress
+    followerOnly
+    amount {
+      asset {
+        symbol
+        decimals
+        address
+        __typename
+      }
+      value
+      __typename
+    }
+    __typename
+  }
+  ... on TimedFeeCollectModuleSettings {
+    type
+    endTimestamp
+    referralFee
+    contractAddress
+    followerOnly
+    amount {
+      asset {
+        symbol
+        decimals
+        address
+        __typename
+      }
+      value
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment StatsFields on PublicationStats {
+  totalUpvotes
+  totalAmountOfMirrors
+  totalAmountOfCollects
+  totalAmountOfComments
+  __typename
+}
+
+fragment MetadataFields on MetadataOutput {
+  name
+  description
+  content
+  image
+  attributes {
+    traitType
+    value
+    __typename
+  }
+  cover {
+    original {
+      url
+      __typename
+    }
+    __typename
+  }
+  media {
+    original {
+      url
+      mimeType
+      __typename
+    }
+    __typename
+  }
+  encryptionParams {
+    accessCondition {
+      or {
+        criteria {
+          ...SimpleConditionFields
+          and {
+            criteria {
+              ...SimpleConditionFields
+              __typename
+            }
+            __typename
+          }
+          or {
+            criteria {
+              ...SimpleConditionFields
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment SimpleConditionFields on AccessConditionOutput {
+  nft {
+    contractAddress
+    chainID
+    contractType
+    tokenIds
+    __typename
+  }
+  eoa {
+    address
+    __typename
+  }
+  token {
+    contractAddress
+    amount
+    chainID
+    condition
+    decimals
+    __typename
+  }
+  follow {
+    profileId
+    __typename
+  }
+  collect {
+    publicationId
+    thisPublication
+    __typename
+  }
+  __typename
+}
+
+fragment CommentFields on Comment {
+  id
+  profile {
+    ...ProfileFields
+    __typename
+  }
+  reaction(request: $reactionRequest)
+  mirrors(by: $profileId)
+  hasCollectedByMe
+  onChainContentURI
+  isGated
+  canComment(profileId: $profileId) {
+    result
+    __typename
+  }
+  canMirror(profileId: $profileId) {
+    result
+    __typename
+  }
+  canDecrypt(profileId: $profileId) {
+    result
+    reasons
+    __typename
+  }
+  collectedBy {
+    address
+    defaultProfile {
+      ...ProfileFields
+      __typename
+    }
+    __typename
+  }
+  collectModule {
+    ...CollectModuleFields
+    __typename
+  }
+  stats {
+    ...StatsFields
+    __typename
+  }
+  metadata {
+    ...MetadataFields
+    __typename
+  }
+  hidden
+  createdAt
+  appId
+  commentOn {
+    ... on Post {
+      ...PostFields
+      __typename
+    }
+    ... on Comment {
+      id
+      profile {
+        ...ProfileFields
+        __typename
+      }
+      reaction(request: $reactionRequest)
+      mirrors(by: $profileId)
+      hasCollectedByMe
+      onChainContentURI
+      isGated
+      canComment(profileId: $profileId) {
+        result
+        __typename
+      }
+      canMirror(profileId: $profileId) {
+        result
+        __typename
+      }
+      canDecrypt(profileId: $profileId) {
+        result
+        reasons
+        __typename
+      }
+      collectedBy {
+        address
+        defaultProfile {
+          handle
+          __typename
+        }
+        __typename
+      }
+      collectModule {
+        ...CollectModuleFields
+        __typename
+      }
+      metadata {
+        ...MetadataFields
+        __typename
+      }
+      stats {
+        ...StatsFields
+        __typename
+      }
+      mainPost {
+        ... on Post {
+          ...PostFields
+          __typename
+        }
+        ... on Mirror {
+          ...MirrorFields
+          __typename
+        }
+        __typename
+      }
+      hidden
+      createdAt
+      __typename
+    }
+    ... on Mirror {
+      ...MirrorFields
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+
+fragment MirrorFields on Mirror {
+  id
+  profile {
+    ...ProfileFields
+    __typename
+  }
+  reaction(request: $reactionRequest)
+  isGated
+  canComment(profileId: $profileId) {
+    result
+    __typename
+  }
+  canMirror(profileId: $profileId) {
+    result
+    __typename
+  }
+  canDecrypt(profileId: $profileId) {
+    result
+    reasons
+    __typename
+  }
+  collectModule {
+    ...CollectModuleFields
+    __typename
+  }
+  stats {
+    ...StatsFields
+    __typename
+  }
+  metadata {
+    ...MetadataFields
+    __typename
+  }
+  hidden
+  mirrorOf {
+    ... on Post {
+      ...PostFields
+      __typename
+    }
+    ... on Comment {
+      id
+      profile {
+        ...ProfileFields
+        __typename
+      }
+      reaction(request: $reactionRequest)
+      mirrors(by: $profileId)
+      onChainContentURI
+      isGated
+      canComment(profileId: $profileId) {
+        result
+        __typename
+      }
+      canMirror(profileId: $profileId) {
+        result
+        __typename
+      }
+      canDecrypt(profileId: $profileId) {
+        result
+        reasons
+        __typename
+      }
+      stats {
+        ...StatsFields
+        __typename
+      }
+      createdAt
+      __typename
+    }
+    __typename
+  }
+  createdAt
+  appId
+  __typename
 }
 `

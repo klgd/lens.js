@@ -2,7 +2,7 @@
 const { PROXY_ACTION } = require('../helpers/queries')
 
 const Collect = superclass => class extends superclass {
-  freeCollect(publicationId, token) {
+  freeCollect(publicationId) {
     return new Promise((resolve, reject) => {
       this.client
         .mutation(PROXY_ACTION, {
@@ -13,13 +13,6 @@ const Collect = superclass => class extends superclass {
               }
             },
           }
-        },
-        {
-          fetchOptions: {
-            headers: {
-              'x-access-token': token,
-            },
-          },
         })
         .toPromise()
         .then((data) => {
