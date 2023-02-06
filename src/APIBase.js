@@ -1,7 +1,8 @@
 
 const createUrqlClient = require('@urql/core').createClient
-const { deepMerge } = require('./helpers/utils')
+const _ = require('lodash')
 const fetch = require("isomorphic-unfetch")
+
 
 const envs = {
   testnet: "https://api-mumbai.lens.dev",
@@ -10,7 +11,7 @@ const envs = {
 
 class APIBase {
   constructor(clientOptions, env = 'mainnet') {
-    this.clientOptions = deepMerge({
+    this.clientOptions = _.merge({
       url: envs[env],
       fetchOptions: {
         headers: {
