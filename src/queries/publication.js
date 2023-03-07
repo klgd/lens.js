@@ -7,7 +7,9 @@ const {
   HIDE_PUBLICATION,
   GET_PUBLICATION,
   GET_PUBLICATION_WITH_PROFILEID,
-  CREATE_POST_VIA_DISPATCHER
+  CREATE_POST_VIA_DISPATCHER,
+  CREATE_MIRROR_VIA_DISPATCHER,
+  CREATE_COMMENT_VIA_DISPATCHER
 } = require('../helpers/queries')
 
 const Publication = superclass => class extends superclass {
@@ -16,7 +18,7 @@ const Publication = superclass => class extends superclass {
     profileId,
     contentURI,
     collectModule,
-    referenceModule
+    referenceModule = { followerOnlyReferenceModule: false }
   ) {
     return new Promise((resolve, reject) => {
       this.client
@@ -42,17 +44,23 @@ const Publication = superclass => class extends superclass {
   }
 
   createCommentTypedData(
+    overrideSigNonce,
     profileId,
     contentURI,
+    publicationId,
     collectModule,
-    referenceModule
+    referenceModule = { followerOnlyReferenceModule: false }
   ) {
     return new Promise((resolve, reject) => {
       this.client
         .mutation(CREATE_COMMENT_TYPED_DATA, {
+          options: {
+            overrideSigNonce
+          },
           request: {
             profileId,
             contentURI,
+            publicationId,
             collectModule,
             referenceModule,
           },
@@ -68,13 +76,17 @@ const Publication = superclass => class extends superclass {
   };
 
   createMirrorTypedData(
+    overrideSigNonce,
     profileId,
     publicationId,
-    referenceModule
+    referenceModule = { followerOnlyReferenceModule: false }
   ) {
     return new Promise((resolve, reject) => {
       this.client
         .mutation(CREATE_MIRROR_TYPED_DATA, {
+          options: {
+            overrideSigNonce
+          },
           request: {
             profileId,
             publicationId,
@@ -174,7 +186,7 @@ const Publication = superclass => class extends superclass {
     profileId,
     contentURI,
     collectModule,
-    referenceModule
+    referenceModule = { followerOnlyReferenceModule: false }
   ) {
     return new Promise((resolve, reject) => {
       this.client
@@ -196,6 +208,57 @@ const Publication = superclass => class extends superclass {
     });
   }
 
+  createMirrorViaDispatcher(
+    profileId,
+    publicationId,
+    referenceModule = { followerOnlyReferenceModule: false }
+  ) {
+    return new Promise((resolve, reject) => {
+      this.client
+        .mutation(CREATE_MIRROR_VIA_DISPATCHER, {
+          request: {
+            profileId,
+            publicationId,
+            referenceModule,
+          },
+        })
+        .toPromise()
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+
+  createCommentViaDispatcher(
+    profileId,
+    contentURI,
+    publicationId,
+    collectModule,
+    referenceModule = { followerOnlyReferenceModule: false }
+  ) {
+    return new Promise((resolve, reject) => {
+      this.client
+        .mutation(CREATE_COMMENT_VIA_DISPATCHER, {
+          request: {
+            profileId,
+            contentURI,
+            publicationId,
+            collectModule,
+            referenceModule,
+          },
+        })
+        .toPromise()
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
 }
 
 module.exports = Publication

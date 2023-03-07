@@ -1,5 +1,5 @@
 
-const { PROXY_ACTION } = require('../helpers/queries')
+const { PROXY_ACTION, CREATE_COLLECT_TYPED_DATA } = require('../helpers/queries')
 
 const Collect = superclass => class extends superclass {
   freeCollect(publicationId) {
@@ -13,6 +13,27 @@ const Collect = superclass => class extends superclass {
               }
             },
           }
+        })
+        .toPromise()
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+
+  createCollectTypedData(overrideSigNonce, publicationId) {
+    return new Promise((resolve, reject) => {
+      this.client
+        .mutation(CREATE_COLLECT_TYPED_DATA, {
+          options: {
+            overrideSigNonce
+          },
+          request: {
+            publicationId
+          },
         })
         .toPromise()
         .then((data) => {

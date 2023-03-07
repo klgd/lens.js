@@ -2392,22 +2392,25 @@ mutation CreatePostTypedData($options: TypedDataOptions, $request: CreatePublicP
 `;
 
 module.exports.CREATE_COMMENT_TYPED_DATA = `
-  mutation($request: CreatePublicCommentRequest!) { 
-    createCommentTypedData(request: $request) {
-      id
-      expiresAt
-      typedData {
-        types {
-          CommentWithSig {
-            name
-            type
-          }
+mutation CreateCommentTypedData($options: TypedDataOptions, $request: CreatePublicCommentRequest!) {
+  createCommentTypedData(options: $options, request: $request) {
+    id
+    expiresAt
+    typedData {
+      types {
+        CommentWithSig {
+          name
+          type
+          __typename
         }
+        __typename
+      }
       domain {
         name
         chainId
         version
         verifyingContract
+        __typename
       }
       value {
         nonce
@@ -2415,48 +2418,18 @@ module.exports.CREATE_COMMENT_TYPED_DATA = `
         profileId
         profileIdPointed
         pubIdPointed
-                referenceModuleData
         contentURI
         collectModule
         collectModuleInitData
         referenceModule
+        referenceModuleData
         referenceModuleInitData
+        __typename
       }
-     }
-   }
- }
-`;
-
-module.exports.CREATE_MIRROR_TYPED_DATA = `
-mutation($request: CreateMirrorRequest!) { 
-  createMirrorTypedData(request: $request) {
-    id
-    expiresAt
-    typedData {
-      types {
-        MirrorWithSig {
-          name
-          type
-        }
-      }
-    domain {
-      name
-      chainId
-      version
-      verifyingContract
+      __typename
     }
-    value {
-      nonce
-      deadline
-      profileId
-      profileIdPointed
-      pubIdPointed
-              referenceModule
-      referenceModuleData
-      referenceModuleInitData
-    }
-   }
- }
+    __typename
+  }
 }
 `;
 
@@ -4451,6 +4424,144 @@ fragment MirrorFields on Mirror {
   }
   createdAt
   appId
+  __typename
+}
+`
+
+module.exports.APPROVED_MODULE_ALLOWANCE_AMOUNT = `
+query ApprovedModuleAllowanceAmount($request: ApprovedModuleAllowanceAmountRequest!) {
+  approvedModuleAllowanceAmount(request: $request) {
+    currency
+    module
+    allowance
+    contractAddress
+    __typename
+  }
+  enabledModuleCurrencies {
+    name
+    symbol
+    decimals
+    address
+    __typename
+  }
+}
+`
+
+module.exports.CREATE_COLLECT_TYPED_DATA = `
+mutation CreateCollectTypedData($options: TypedDataOptions, $request: CreateCollectRequest!) {
+  createCollectTypedData(options: $options, request: $request) {
+    id
+    expiresAt
+    typedData {
+      types {
+        CollectWithSig {
+          name
+          type
+          __typename
+        }
+        __typename
+      }
+      domain {
+        name
+        chainId
+        version
+        verifyingContract
+        __typename
+      }
+      value {
+        nonce
+        deadline
+        profileId
+        pubId
+        data
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+`
+
+module.exports.CREATE_MIRROR_TYPED_DATA = `
+mutation CreateMirrorTypedData($options: TypedDataOptions, $request: CreateMirrorRequest!) {
+  createMirrorTypedData(options: $options, request: $request) {
+    id
+    expiresAt
+    typedData {
+      types {
+        MirrorWithSig {
+          name
+          type
+          __typename
+        }
+        __typename
+      }
+      domain {
+        name
+        chainId
+        version
+        verifyingContract
+        __typename
+      }
+      value {
+        nonce
+        deadline
+        profileId
+        profileIdPointed
+        pubIdPointed
+        referenceModule
+        referenceModuleData
+        referenceModuleInitData
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+`
+
+module.exports.CREATE_MIRROR_VIA_DISPATCHER = `
+mutation CreateMirrorViaDispatcher($request: CreateMirrorRequest!) {
+  createMirrorViaDispatcher(request: $request) {
+    ...RelayerResultFields
+    __typename
+  }
+}
+
+fragment RelayerResultFields on RelayResult {
+  ... on RelayerResult {
+    txHash
+    txId
+    __typename
+  }
+  ... on RelayError {
+    reason
+    __typename
+  }
+  __typename
+}
+`
+
+module.exports.CREATE_COMMENT_VIA_DISPATCHER = `
+mutation CreateCommentViaDispatcher($request: CreatePublicCommentRequest!) {
+  createCommentViaDispatcher(request: $request) {
+    ...RelayerResultFields
+    __typename
+  }
+}
+
+fragment RelayerResultFields on RelayResult {
+  ... on RelayerResult {
+    txHash
+    txId
+    __typename
+  }
+  ... on RelayError {
+    reason
+    __typename
+  }
   __typename
 }
 `
