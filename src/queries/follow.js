@@ -5,9 +5,9 @@ const Follow = superclass => class extends superclass {
     return new Promise((resolve, reject) => {
       this.client
         .mutation(CREATE_FOLLOW_TYPED_DATA, {
-          options: {
+          options: overrideSigNonce ? {
             overrideSigNonce
-          },
+          } : null,
           request: {
             follow: [
               {

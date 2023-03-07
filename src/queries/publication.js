@@ -23,9 +23,9 @@ const Publication = superclass => class extends superclass {
     return new Promise((resolve, reject) => {
       this.client
         .mutation(CREATE_POST_TYPED_DATA, {
-          options: {
+          options: overrideSigNonce ? {
             overrideSigNonce
-          },
+          } : null,
           request: {
             profileId,
             contentURI,
@@ -54,9 +54,9 @@ const Publication = superclass => class extends superclass {
     return new Promise((resolve, reject) => {
       this.client
         .mutation(CREATE_COMMENT_TYPED_DATA, {
-          options: {
+          options: overrideSigNonce ? {
             overrideSigNonce
-          },
+          } : null,
           request: {
             profileId,
             contentURI,
@@ -84,9 +84,9 @@ const Publication = superclass => class extends superclass {
     return new Promise((resolve, reject) => {
       this.client
         .mutation(CREATE_MIRROR_TYPED_DATA, {
-          options: {
+          options: overrideSigNonce ? {
             overrideSigNonce
-          },
+          } : null,
           request: {
             profileId,
             publicationId,

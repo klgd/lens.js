@@ -28,9 +28,9 @@ const Collect = superclass => class extends superclass {
     return new Promise((resolve, reject) => {
       this.client
         .mutation(CREATE_COLLECT_TYPED_DATA, {
-          options: {
+          options: overrideSigNonce ? {
             overrideSigNonce
-          },
+          } : null,
           request: {
             publicationId
           },
