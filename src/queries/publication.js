@@ -9,7 +9,9 @@ const {
   GET_PUBLICATION_WITH_PROFILEID,
   CREATE_POST_VIA_DISPATCHER,
   CREATE_MIRROR_VIA_DISPATCHER,
-  CREATE_COMMENT_VIA_DISPATCHER
+  CREATE_COMMENT_VIA_DISPATCHER,
+  ADD_REACTION,
+  REMOVE_REACTION
 } = require('../helpers/queries')
 
 const Publication = superclass => class extends superclass {
@@ -259,6 +261,55 @@ const Publication = superclass => class extends superclass {
         });
     });
   }
+
+  addReaction(
+    profileId,
+    publicationId,
+    reaction = 'UPVOTE' // UPVOTE DOWNVOTE
+  ) {
+    return new Promise((resolve, reject) => {
+      this.client
+        .mutation(ADD_REACTION, {
+          request: {
+            profileId,
+            publicationId,
+            reaction,
+          },
+        })
+        .toPromise()
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+
+  removeReaction(
+    profileId,
+    publicationId,
+    reaction = 'UPVOTE' // UPVOTE DOWNVOTE
+  ) {
+    return new Promise((resolve, reject) => {
+      this.client
+        .mutation(REMOVE_REACTION, {
+          request: {
+            profileId,
+            publicationId,
+            reaction,
+          },
+        })
+        .toPromise()
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
+
 }
 
 module.exports = Publication
